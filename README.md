@@ -1,0 +1,2 @@
+# DTPermissionKit
+Check iOS permission
