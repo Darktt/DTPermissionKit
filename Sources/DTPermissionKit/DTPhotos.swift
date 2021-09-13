@@ -62,23 +62,21 @@ private extension PHAuthorizationStatus
 {
     var status: DTPermission.Status {
         
-        let status: DTPermission.Status
+        var status: DTPermission.Status = .notDetermined
         
-        switch self {
-        case .authorized:
+        if self == .authorized {
+            
             status = .authorized
+        }
+        
+        if self == .restricted || self == .denied {
             
-        case .restricted, .denied:
             status = .denied
+        }
+        
+        if #available(iOS 14.0, *), self == .limited {
             
-        case .notDetermined:
-            status = .notDetermined
-            
-        case .limited:
             status = .limit
-            
-        default:
-            fatalError()
         }
         
         return status

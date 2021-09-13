@@ -2,7 +2,7 @@
 Check iOS permission
 
 Usage:
-```
+```swift
 // Request camera permission.
 let premission = DTPermission.camera
 premission.request {
@@ -29,3 +29,7 @@ premission.request {
     }
 }
 ```
+
+Note:
+When summit app to **Apple Store Connect**, you need add all privacy, then just write description of requested permission on you app, other description can be empty.
+

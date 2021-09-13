@@ -52,16 +52,31 @@ internal extension DTPermission
         
         fileprivate static var status: Status {
             
-            let statusLocation: CLAuthorizationStatus = CLLocationManager.authorizationStatus()
+            var statusLocation: CLAuthorizationStatus = .notDetermined
+            var fullAccuracy: Bool = true
+            
+            if #available(iOS 14.0, *) {
+                
+                let manager = CLLocationManager()
+                
+                statusLocation = manager.authorizationStatus
+                fullAccuracy = (manager.accuracyAuthorization == .fullAccuracy)
+                
+            } else {
+                // Fallback on earlier versions
+                
+                statusLocation = CLLocationManager.authorizationStatus()
+            }
+            
             
             var status: Status = .notDetermined
             
             switch statusLocation {
             case .authorizedAlways:
-                status = .authorizedAlways
+                status = .authorizedAlways(fullAccuracy: fullAccuracy)
                 
             case .authorizedWhenInUse:
-                status = .authorizedWhenInUse
+                status = .authorizedWhenInUse(fullAccuracy: fullAccuracy)
                 
             case .restricted, .denied:
                 status = .denied
@@ -130,6 +145,13 @@ extension DTPermission.LocationDelegate: CLLocationManagerDelegate
             return
         }
         
+        let premissionStatus: DTPermission.Status = self.status
+        self.result(premissionStatus)
+    }
+    
+    @available(iOS 14.0, *)
+    internal func locationManagerDidChangeAuthorization(_ manager: CLLocationManager)
+    {
         let premissionStatus: DTPermission.Status = self.status
         self.result(premissionStatus)
     }

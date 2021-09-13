@@ -7,26 +7,29 @@
 
 import Photos
 
+// MARK: - DTPermission.Status -
+
 public extension DTPermission
 {
-    enum Status: String
+    enum Status
     {
-        case authorized     = "Authorized"
+        case authorized
         
         // For location always use.
-        case authorizedAlways = "Authorized Always"
+        case authorizedAlways(fullAccuracy: Bool)
         
         // For location when in use.
-        case authorizedWhenInUse = "Authorized WhenInUse"
+        case authorizedWhenInUse(fullAccuracy: Bool)
         
-        case denied         = "Denied"
+        case denied
         
-        case disabled       = "Disabled"
+        case disabled
         
-        case notDetermined  = "Not Determined"
+        case notDetermined
         
         // For photo on iOS 14.0 or later.
-        case limit = "Limit"
+        @available(iOS 14, *)
+        case limit
     }
 }
 
@@ -34,9 +37,44 @@ extension DTPermission.Status: CustomStringConvertible
 {
     public var description: String {
         
-        return self.rawValue
+        let description: String
+        
+        switch self {
+        case .authorized:
+            description = "Authorized"
+            
+        case let .authorizedAlways(fullAccuracy):
+            description = "Authorized always, full accuracy: \(fullAccuracy)"
+            
+        case let .authorizedWhenInUse(fullAccuracy):
+            description = "Authorized when in use, full accuracy: \(fullAccuracy)"
+            
+        case .denied:
+            description = "Denied"
+            
+        case .disabled:
+            description = "Disabled"
+            
+        case .notDetermined:
+            description = "Not Determined"
+            
+        case .limit:
+            description = "Limit"
+        }
+        
+        return description
     }
 }
+
+extension DTPermission.Status: Equatable
+{
+    public static func == (lhs: DTPermission.Status, rhs: DTPermission.Status) -> Bool
+    {
+        return lhs.description == rhs.description
+    }
+}
+
+// MARK: - DTPermission.PhotoAccessLevel -
 
 public extension DTPermission
 {
