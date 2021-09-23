@@ -20,7 +20,7 @@ internal extension DTPermission
     
     // MARK: - Methods -
     
-    func statusAndRequestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>? , with result: @escaping RequestHandler)
+    func statusAndRequestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>?, with result: @escaping RequestHandler)
     {
         let statusResult: RequestHandler = {
             
@@ -36,6 +36,21 @@ internal extension DTPermission
         }
         
         self.statusForNotifications(with: statusResult)
+    }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func statusAndRequestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>?) async -> Status
+    {
+        let status: Status = await self.statusForNotifications()
+        
+        guard status != .notDetermined else {
+            
+            let status: Status = await self.requestNotifications(options: options, categories: categories)
+            
+            return status
+        }
+        
+        return status
     }
     
     func statusNotifications(with result: @escaping RequestHandler)
@@ -70,8 +85,24 @@ internal extension DTPermission
         self.notificationCenter.getNotificationSettings(completionHandler: completionHandler)
     }
     
-    @available(iOS 10, *)
-    func requestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>? , with result: @escaping RequestHandler)
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func statusNotifications() async -> Status
+    {
+        let status: Status = await withCheckedContinuation {
+            
+            [unowned self] continuation in
+            
+            self.statusNotifications {
+                
+                continuation.resume(returning: $0)
+            }
+        }
+        
+        return status
+    }
+    
+    @available(iOS 10.0, *)
+    func requestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>?, with result: @escaping RequestHandler)
     {
         let completionHandler: (Bool, Error?) -> Void = {
             
@@ -87,11 +118,32 @@ internal extension DTPermission
             }
         }
         
-        if let categories = categories {
+        if let categories: Set<UNNotificationCategory> = categories {
             
             self.notificationCenter.setNotificationCategories(categories)
         }
         
         self.notificationCenter.requestAuthorization(options: options, completionHandler: completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestNotifications(options: UNAuthorizationOptions, categories: Set<UNNotificationCategory>?) async -> Status
+    {
+        if let categories: Set<UNNotificationCategory> = categories {
+            
+            self.notificationCenter.setNotificationCategories(categories)
+        }
+        
+        let grant: Bool = (try? await self.notificationCenter.requestAuthorization(options: options)) ?? false
+        let status: Status = grant ? .authorized : .denied
+        
+        if grant {
+            
+            let application = await UIApplication.shared
+            await application.registerForRemoteNotifications()
+        }
+        
+        return status
+    }
 }
+ 

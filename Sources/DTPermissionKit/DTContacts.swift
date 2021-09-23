@@ -57,4 +57,22 @@ internal extension DTPermission
         let store = CNContactStore()
         store.requestAccess(for: .contacts, completionHandler: completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestContacts() async -> Status
+    {
+        let key: DTInfoKey = .contactUssageDescription
+        
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARING: \(key.rawValue) not found in Info.plist.")
+        }
+        
+        let store = CNContactStore()
+        _ = try? await store.requestAccess(for: .contacts)
+        
+        let status = self.statusContacts
+        
+        return status
+    }
 }

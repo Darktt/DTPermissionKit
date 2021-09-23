@@ -135,6 +135,7 @@ public class DTPermission
         let type: ServiceType = self.type
         
         switch type {
+            
         case .contacts:
             self.requestContacts(with: result)
             
@@ -170,6 +171,66 @@ public class DTPermission
         }
     }
     
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    public func request() async -> Status
+    {
+        if case let .notifications(options: options, categories: categories) = self.type {
+            
+            let status: Status = await self.statusAndRequestNotifications(options: options, categories: categories)
+            
+            return status
+        }
+        
+        var status = self.status
+        
+        // If permission not determined, callback current status.
+        if status != .notDetermined {
+            
+            return status
+        }
+        
+        let type: ServiceType = self.type
+        
+        switch type {
+            
+        case .contacts:
+            status = await self.requestContacts()
+            
+        case .locationAlways, .locationWhenInUse, .locationAlwaysAndWhenInUse:
+            status = await self.requestLocation(for: type)
+            
+        case let .notifications(options, categories):
+            status = await self.requestNotifications(options: options, categories: categories)
+            
+        case .microphone:
+            status = await self.requestMicrophone()
+            
+        case .camera:
+            status = await self.requestCamera()
+            
+        case let .photos(level: level):
+            status = await self.requestPhotos(for: level)
+            
+        case .reminders:
+            status = await self.requestReminders()
+            
+        case .events:
+            status = await self.requestEvent()
+            
+        case .speechRecognizer:
+            status = await self.requestSpeechRecognizer()
+            
+        case .mediaLibrary:
+            status = await self.requestMediaLibaray()
+            
+        case .siri:
+            status = await self.requestSiri()
+            
+        }
+        
+        return status
+    }
+    
     public func statusForNotifications(with result: @escaping RequestHandler)
     {
         guard case .notifications(_, _) = self.type else {
@@ -178,6 +239,19 @@ public class DTPermission
         }
         
         self.statusNotifications(with: result)
+    }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    public func statusForNotifications() async -> Status {
+        
+        guard case .notifications(_, _) = self.type else {
+            
+            fatalError("WARNING: Only for notification status")
+        }
+        
+        let status: Status = await self.statusNotifications()
+        
+        return status
     }
 }
 

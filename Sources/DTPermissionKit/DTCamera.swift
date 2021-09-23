@@ -48,11 +48,20 @@ internal extension DTPermission
             
             [unowned self] _ in
             
-            let status = self.statusCamera
+            let status: Status = self.statusCamera
             
             result(status)
         }
         
         AVCaptureDevice.requestAccess(for: .video, completionHandler: completionHandler)
+    }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestCamera() async -> Status
+    {
+        let _ = await AVCaptureDevice.requestAccess(to: .video)
+        let status: Status = self.statusCamera
+        
+        return status
     }
 }

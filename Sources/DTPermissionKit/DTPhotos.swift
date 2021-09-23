@@ -56,6 +56,21 @@ internal extension DTPermission
             PHPhotoLibrary.requestAuthorization(completionHandler)
         }
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestPhotos(for level: PhotoAccessLevel) async -> Status
+    {
+        let key: DTInfoKey = .photoLibraryUsageDescription
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARNING: \(key.rawValue) not found in Info.plist")
+        }
+        
+        let _ = await PHPhotoLibrary.requestAuthorization(for: level.phAccessLevel)
+        let status: Status = self.statusPhtots
+        
+        return status
+    }
 }
 
 private extension PHAuthorizationStatus

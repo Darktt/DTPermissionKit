@@ -63,4 +63,23 @@ internal extension DTPermission
         
         SFSpeechRecognizer.requestAuthorization(completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestSpeechRecognizer() async -> Status
+    {
+        let keys: Set<DTInfoKey> = [.microphoneUsageDescription, .speechRecognitionUsageDescription]
+        
+        for key in keys {
+            
+            if Bundle.object(forInfoDictionaryKey: key) == nil {
+                
+                fatalError("WARNING: \(key.rawValue) not found in Info.plist")
+            }
+        }
+        
+        let _ = await SFSpeechRecognizer.requestAuthorization()
+        let status: Status = self.statusSpeechRecognizer
+        
+        return status
+    }
 }

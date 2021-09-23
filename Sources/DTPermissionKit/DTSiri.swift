@@ -56,4 +56,19 @@ internal extension DTPermission
         
         INPreferences.requestSiriAuthorization(completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestSiri() async -> Status
+    {
+        let key: DTInfoKey = .siriUsageDescription
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARNING: \(key.rawValue) not found in Info.plist")
+        }
+        
+        let _ = await INPreferences.requestSiriAuthorization()
+        let status: Status = self.statusSiri
+        
+        return status
+    }
 }

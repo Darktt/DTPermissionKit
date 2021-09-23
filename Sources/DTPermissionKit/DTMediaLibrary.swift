@@ -56,4 +56,19 @@ internal extension DTPermission
         
         MPMediaLibrary.requestAuthorization(completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestMediaLibaray() async -> Status
+    {
+        let key: DTInfoKey = .mediaLibraryUsageDescription
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARNING: \(key.rawValue) not found in Info.plist")
+        }
+        
+        let _ = await MPMediaLibrary.requestAuthorization()
+        let status: Status = self.statusMediaLibrary
+        
+        return status
+    }
 }

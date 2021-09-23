@@ -42,6 +42,22 @@ internal extension DTPermission
         
         self.locationDelegate = delegate
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestLocation(for type: ServiceType) async -> Status
+    {
+        let status: Status = await withCheckedContinuation {
+            
+            [unowned self] continuation in
+            
+            self.requestLocation(for: type) {
+                
+                continuation.resume(returning: $0)
+            }
+        }
+        
+        return status
+    }
 }
 
 internal extension DTPermission

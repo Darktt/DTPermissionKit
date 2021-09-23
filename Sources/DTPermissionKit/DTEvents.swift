@@ -56,4 +56,21 @@ internal extension DTPermission
         let store = EKEventStore()
         store.requestAccess(to: .event, completion: completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestEvent() async -> Status
+    {
+        let key: DTInfoKey = .remindersUsageDescription
+        
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARING: \(key.rawValue) not found in Info.plist.")
+        }
+        
+        let store = EKEventStore()
+        let _ = try? await store.requestAccess(to: .event)
+        let status: Status = self.statusEvents
+        
+        return status
+    }
 }

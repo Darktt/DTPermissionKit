@@ -60,4 +60,19 @@ internal extension DTPermission
         
         self.audioSession.requestRecordPermission(completionHandler)
     }
+    
+    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    func requestMicrophone() async -> Status
+    {
+        let key: DTInfoKey = .microphoneUsageDescription
+        guard let _ = Bundle.object(forInfoDictionaryKey: key) else {
+            
+            fatalError("WARNING: \(key.rawValue) not found in Info.plist")
+        }
+        
+        let _ = await self.audioSession.requestRecordPermission()
+        let status: Status = self.statusMicrophone
+        
+        return status
+    }
 }
